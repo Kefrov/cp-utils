@@ -3,7 +3,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-#include "debugging.h"
+#include "debugging.hpp"
 
 typedef long long ll;
 typedef long double ld;

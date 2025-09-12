@@ -4,7 +4,7 @@
 using namespace std;
 
 #ifndef ONLINE_JUDGE
-#include "cp_utils/debugging.h"
+#include "cp_utils/debugging.hpp"
 #endif
 
 using ll = long long;
