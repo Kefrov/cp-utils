@@ -14,8 +14,8 @@ using str = string;
 using pll = pair<ll,ll>;
 using pld = pair<ld,ld>;
 #define mp make_pair
-#define F first
-#define S second
+#define ff first
+#define ss second
 
 using vl = vector<ll>;
 #define sz(x) ll((x).size())
