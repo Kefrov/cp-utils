@@ -336,7 +336,7 @@ vector<vector<ll>> matrix_mul(vector<vector<ll>> a, vector<vector<ll>> b) {
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
             for (int k = 0; k < k_bound; k++) {
-                ab[i][j] += a[i][k] * b[k][j];
+                ab[i][j] += a[i][k] * b[k][j]; // ! Remember to apply % MOD
             }
         }
     }
