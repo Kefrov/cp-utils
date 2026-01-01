@@ -24,6 +24,22 @@ using namespace __gnu_pbds;
 #define rng_init mt19937 rng(chrono::steady_clock::now().time_since_epoch().count())
 #define rng_seed(x) mt19937 rng(x)
 
+// Interactive functions
+ll ask(ll x) {
+    cout << "? " << x << endl;
+    cout.flush();
+
+    ll inp;
+    if (!(cin >> inp)) exit(0);
+    if (inp == -1) exit(0);
+    return inp;
+}
+
+void answer(ll m) {
+    cout << "! " << m << endl;
+    cout.flush();
+}
+
 ll binpow(ll a, ll b) {
     ll res = 1;
 
@@ -430,5 +446,7 @@ ll compute_hash(string const& s) {
     }
     return hash_value;
 }
+
+
 
 int main() {}
