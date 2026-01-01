@@ -1,4 +1,4 @@
-// My predefined utility functions 
+// * My predefined utility functions 
 
 #include <bits/stdc++.h>
 using namespace std;
@@ -14,31 +14,101 @@ using u128 = __uint128_t;
 const ll MOD = 1000000007;
 const ll INF = 2000000000000000003;
 
-// ordered_set
+// https://www.youtube.com/watch?v=oW6iuFbwPDg (generating random numbers, shuffling vectors...)
+#define rng_init mt19937 rng(chrono::steady_clock::now().time_since_epoch().count())
+#define rng_seed(x) mt19937 rng(x)
+
+// ^ Data Structures
+
+// ordered_set -> order_of_key(x): #elements < x, find_by_order(k): k-th smallest (0-indexed)
 #include <ext/pb_ds/assoc_container.hpp>
 #include <ext/pb_ds/tree_policy.hpp> 
 using namespace __gnu_pbds; 
 #define ordered_set tree<ll,null_type,less<ll>,rb_tree_tag,tree_order_statistics_node_update>
 
-// https://www.youtube.com/watch?v=oW6iuFbwPDg (generating random numbers, shuffling vectors...)
-#define rng_init mt19937 rng(chrono::steady_clock::now().time_since_epoch().count())
-#define rng_seed(x) mt19937 rng(x)
+// ordered_multiset -> supports duplicates using (value, unique_id)
+#define ordered_multiset tree<pair<ll,ll>,null_type,less<pair<ll,ll>>,rb_tree_tag,tree_order_statistics_node_update>
 
-// Interactive functions
+// ^ Graphs
+
+vector<vector<ll>> graph;
+vector<bool> visited;
+
+void dfs(ll node) {
+    visited[node] = true;
+
+    for (ll child : graph[node]) {
+        if (visited[child]) continue;
+
+        dfs(child);
+    }
+
+    // topsort.push_back(node) // Viable only when graph is a DAG
+}
+
+vector<ll> start;
+vector<ll> finish;
+ll timer = 0;
+bool cyclic = false;
+
+void dfs_edge_class(ll node) {
+    start[node] = timer++;
+
+    for (ll child : graph[node]) {
+        if (start[child] == -1) {
+            // Tree edge (Not visited before)
+            dfs_edge_class(child);
+        } else {
+            if (finish[child] == -1) {
+                // Back edge
+                cyclic = true;
+            } else if (start[node] < start[child]) {
+                // Forward edge
+            } else {
+                // Cross edge
+            }
+        }
+    }
+
+    finish[node] = timer++;
+}
+
+void bfs(ll start_node) {
+    deque<ll> rem = {start_node};
+    visited[start_node] = true;
+
+    while (!rem.empty()) {
+        ll current = rem.front();
+
+        rem.pop_front();
+        for (ll child : graph[current]) {
+            if (visited[child]) continue;
+
+            rem.push_back(child);
+            visited[child] = true;
+        }
+    }
+}
+
+// ^ Interactive
+
 ll ask(ll x) {
     cout << "? " << x << endl;
     cout.flush();
 
-    ll inp;
-    if (!(cin >> inp)) exit(0);
-    if (inp == -1) exit(0);
-    return inp;
+    ll resp;
+    if (!(cin >> resp)) exit(0);
+    if (resp == -1) exit(0);
+
+    return resp;
 }
 
 void answer(ll m) {
     cout << "! " << m << endl;
     cout.flush();
 }
+
+// ^ Math
 
 ll binpow(ll a, ll b) {
     ll res = 1;
@@ -239,114 +309,6 @@ ll chinese_remainder_theorem(vector<Congruence> const& congruences) {
     return solution;
 }
 
-struct Point {
-    ll x, y;
-};
- 
-ll orientation(Point p, Point q, Point r) {
-    ll val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
-    return (val == 0) ? 0 : (val > 0 ? 1 : 2);
-}
- 
-bool onSegment(Point p, Point q, Point r) {
-    return q.x <= max(p.x, r.x) && q.x >= min(p.x, r.x) && q.y <= max(p.y, r.y) && q.y >= min(p.y, r.y);
-}
- 
-bool doIntersect(Point p1, Point q1, Point p2, Point q2) {
-    ll o1 = orientation(p1, q1, p2), o2 = orientation(p1, q1, q2);
-    ll o3 = orientation(p2, q2, p1), o4 = orientation(p2, q2, q1);
-    if (o1 != o2 && o3 != o4) return true;
-    if (o1 == 0 && onSegment(p1, p2, q1)) return true;
-    if (o2 == 0 && onSegment(p1, q2, q1)) return true;
-    if (o3 == 0 && onSegment(p2, p1, q2)) return true;
-    if (o4 == 0 && onSegment(p2, q1, q2)) return true;
-    return false;
-}
-
-bool areCollinear(Point p1, Point p2, Point p3) {
-    return (p2.y - p1.y) * (p3.x - p2.x) == (p3.y - p2.y) * (p2.x - p1.x);
-}
-
-// Intersection between two lines or segments
-// When dealing with segments check if they intersect first
-pair<ld, ld> intersection(Point p1, Point q1, Point p2, Point q2) {
-    ld a1 = q1.y - p1.y;
-    ld b1 = p1.x - q1.x;
-    ld c1 = a1 * p1.x + b1 * p1.y;
- 
-    ld a2 = q2.y - p2.y;
-    ld b2 = p2.x - q2.x;
-    ld c2 = a2 * p2.x + b2 * p2.y;
- 
-    ld determinant = a1 * b2 - a2 * b1;
-
-    if (determinant == 0) {
-        return {INF, INF};
-    }
-
-    ld x = (b2 * c1 - b1 * c2) / determinant;
-    ld y = (a1 * c2 - a2 * c1) / determinant;
-
-    return {x, y};
-}
-
-vector<ll> prefix_function(string& s, ll n) {
-    vector<ll> pi(n);
-    for (ll i = 1, k = 0; i < n; i++) {
-        while (k > 0 && s[i] != s[k])
-            k = pi[k - 1];
-
-        if (s[i] == s[k]) 
-            k++;
-
-        pi[i] = k;
-    }
-
-    return pi;
-}
-
-ll kmp(string& s, ll n, string& p, ll m) {
-    vector<ll> pi = prefix_function(p, m);
-    ll res = 0;
-    for (ll i = 0, k = 0; i < n; i++) {
-        while (k > 0 && s[i] != p[k])
-            k = pi[k - 1];
-
-        if (s[i] == p[k]) 
-            k++;
-
-        if (k == m) {
-            res++;
-            // This function calculates number of occurences of p in s
-            // You can also change it to return a vector of their positions
-            
-            k = pi[k - 1];
-            // These occurences may overlap
-            // If you don't want that, replace with: k = 0;
-        }
-    }
-
-    return res;
-}
-
-vector<ll> all_prefixes_cnt(string& s, ll n) {
-    vector<ll> pf = prefix_function(s, n);
-    vector<ll> freq(n + 1);
-
-    for (int i = 0; i < n; i++) {
-        freq[pf[i]]++;
-    }
-
-    for (int i = n; i > 0; i--) {
-        freq[pf[i - 1]] += freq[i];
-    }
-
-    for (auto& i : freq) i++;
-    freq.erase(begin(freq));
-
-    return freq;
-}
-
 vector<vector<ll>> matrix_mul(vector<vector<ll>> a, vector<vector<ll>> b) {
     ll rows = ll((a).size());
     ll cols = ll((b[0]).size());
@@ -412,7 +374,7 @@ bool check_composite(u64 n, u64 a, u64 d, int s) {
             return false;
     }
     return true;
-};
+}
 
 bool MillerRabin(u64 n) { // returns true if n is prime, else returns false.
     if (n < 2)
@@ -434,6 +396,118 @@ bool MillerRabin(u64 n) { // returns true if n is prime, else returns false.
     return true;
 }
 
+// ^ Geometry
+
+struct Point {
+    ll x, y;
+};
+ 
+ll orientation(Point p, Point q, Point r) {
+    ll val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
+    return (val == 0) ? 0 : (val > 0 ? 1 : 2);
+}
+ 
+bool onSegment(Point p, Point q, Point r) {
+    return q.x <= max(p.x, r.x) && q.x >= min(p.x, r.x) && q.y <= max(p.y, r.y) && q.y >= min(p.y, r.y);
+}
+ 
+bool doIntersect(Point p1, Point q1, Point p2, Point q2) {
+    ll o1 = orientation(p1, q1, p2), o2 = orientation(p1, q1, q2);
+    ll o3 = orientation(p2, q2, p1), o4 = orientation(p2, q2, q1);
+    if (o1 != o2 && o3 != o4) return true;
+    if (o1 == 0 && onSegment(p1, p2, q1)) return true;
+    if (o2 == 0 && onSegment(p1, q2, q1)) return true;
+    if (o3 == 0 && onSegment(p2, p1, q2)) return true;
+    if (o4 == 0 && onSegment(p2, q1, q2)) return true;
+    return false;
+}
+
+bool areCollinear(Point p1, Point p2, Point p3) {
+    return (p2.y - p1.y) * (p3.x - p2.x) == (p3.y - p2.y) * (p2.x - p1.x);
+}
+
+// Intersection between two lines or segments
+// When dealing with segments check if they intersect first
+pair<ld, ld> intersection(Point p1, Point q1, Point p2, Point q2) {
+    ld a1 = q1.y - p1.y;
+    ld b1 = p1.x - q1.x;
+    ld c1 = a1 * p1.x + b1 * p1.y;
+ 
+    ld a2 = q2.y - p2.y;
+    ld b2 = p2.x - q2.x;
+    ld c2 = a2 * p2.x + b2 * p2.y;
+ 
+    ld determinant = a1 * b2 - a2 * b1;
+
+    if (determinant == 0) {
+        return {INF, INF};
+    }
+
+    ld x = (b2 * c1 - b1 * c2) / determinant;
+    ld y = (a1 * c2 - a2 * c1) / determinant;
+
+    return {x, y};
+}
+
+// ^ Strings
+
+vector<ll> prefix_function(string& s, ll n) {
+    vector<ll> pi(n);
+    for (ll i = 1, k = 0; i < n; i++) {
+        while (k > 0 && s[i] != s[k])
+            k = pi[k - 1];
+
+        if (s[i] == s[k]) 
+            k++;
+
+        pi[i] = k;
+    }
+
+    return pi;
+}
+
+ll kmp(string& s, ll n, string& p, ll m) {
+    vector<ll> pi = prefix_function(p, m);
+    ll res = 0;
+    for (ll i = 0, k = 0; i < n; i++) {
+        while (k > 0 && s[i] != p[k])
+            k = pi[k - 1];
+
+        if (s[i] == p[k]) 
+            k++;
+
+        if (k == m) {
+            res++;
+            // This function calculates number of occurences of p in s
+            // You can also change it to return a vector of their positions
+            
+            k = pi[k - 1];
+            // These occurences may overlap
+            // If you don't want that, replace with: k = 0;
+        }
+    }
+
+    return res;
+}
+
+vector<ll> all_prefixes_cnt(string& s, ll n) {
+    vector<ll> pf = prefix_function(s, n);
+    vector<ll> freq(n + 1);
+
+    for (int i = 0; i < n; i++) {
+        freq[pf[i]]++;
+    }
+
+    for (int i = n; i > 0; i--) {
+        freq[pf[i - 1]] += freq[i];
+    }
+
+    for (auto& i : freq) i++;
+    freq.erase(begin(freq));
+
+    return freq;
+}
+
 // To improve no-collision probability, duplicate this function (with a different modulo) then compare pair<ll,ll>
 ll compute_hash(string const& s) {
     const int p = 31;
@@ -446,7 +520,5 @@ ll compute_hash(string const& s) {
     }
     return hash_value;
 }
-
-
 
 int main() {}
