@@ -21,6 +21,7 @@ using vl = vector<ll>;
 #define sz(x) ll((x).size())
 #define all(x) begin(x), end(x)
 #define pb push_back
+#define eb emplace_back 
 
 #define endl '\n'
 #define yes cout << "YES" << endl
