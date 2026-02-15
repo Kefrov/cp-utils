@@ -43,7 +43,7 @@ void dfs(ll node) {
         dfs(child);
     }
 
-    // topsort.push_back(node) // Viable only when graph is a DAG
+    // topsort.push_back(node); // Viable only when graph is a DAG
 }
 
 vector<ll> start;

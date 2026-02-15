@@ -5,6 +5,9 @@ using namespace std;
 
 #ifndef ONLINE_JUDGE
 #include "cp_utils/debugging.hpp"
+#else
+#define debug(...)
+#define debugArr(...)
 #endif
 
 using ll = long long;

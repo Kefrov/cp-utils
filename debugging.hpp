@@ -1,146 +1,118 @@
-// Useful debugging template for C++ by SansPapyrus683
+// blog: https://codeforces.com/blog/entry/125435
 
-#include <iostream>
-#include <vector>
-#include <deque>
-#include <map>
-#include <unordered_map>
-#include <set>
-#include <unordered_set>
-
-void dbg_out() { std::cerr << '\n'; }
-template<typename Head, typename... Tail>
-void dbg_out(Head H, Tail... T) { std::cerr << ' ' << H; dbg_out(T...); }
-#define dbg(...) std::cerr << "(" << #__VA_ARGS__ << "):", dbg_out(__VA_ARGS__)
-
-template <typename T>
-std::ostream& operator<<(std::ostream& out, const std::vector<T>& vec) {
-    if (vec.empty()) {
-        out << "[]";
-        return out;
+#ifndef DEBUG_TEMPLATE_CPP
+#define DEBUG_TEMPLATE_CPP
+#include <bits/stdc++.h>
+// #define cerr cout
+namespace __DEBUG_UTIL__
+{
+    using namespace std;
+    template <typename T>
+    concept is_iterable = requires(T &&x) { begin(x); } &&
+                          !is_same_v<remove_cvref_t<T>, string>;
+    void print(const char *x) { cerr << x; }
+    void print(char x) { cerr << "\'" << x << "\'"; }
+    void print(bool x) { cerr << (x ? "T" : "F"); }
+    void print(string x) { cerr << "\"" << x << "\""; }
+    void print(vector<bool> &v)
+    { /* Overloaded this because stl optimizes vector<bool> by using
+         _Bit_reference instead of bool to conserve space. */
+        int f = 0;
+        cerr << '{';
+        for (auto &&i : v)
+            cerr << (f++ ? "," : "") << (i ? "T" : "F");
+        cerr << "}";
     }
-    out << '[';
-    for (int i = 0; i < vec.size() - 1; i++) {
-        out << vec[i] << ", ";
-    }
-    return out << vec.back() << ']';
-}
-
-template <typename T1, typename T2>
-std::ostream& operator<<(std::ostream& out, const std::pair<T1, T2>& pair) {
-    return out << '(' << pair.first << ", " << pair.second << ')';
-}
-
-template <typename T>
-std::ostream& operator<<(std::ostream& out, const std::deque<T>& deq) {
-    if (deq.empty()) {
-        out << "[]";
-        return out;
-    }
-    out << '[';
-    for (int i = 0; i < deq.size() - 1; i++) {
-        out << deq[i] << ", ";
-    }
-    return out << deq.back() << ']';
-}
-
-template <typename T1, typename T2>
-std::ostream& operator<<(std::ostream& out, const std::unordered_map<T1, T2>& map) {
-    out << '{';
-    for (auto it = map.begin(); it != map.end(); it++) {
-        std::pair<T1, T2> element = *it;
-        out << element.first << ": " << element.second;
-        if (std::next(it) != map.end()) {
-            out << ", ";   
+    template <typename T>
+    void print(T &&x)
+    {
+        if constexpr (is_iterable<T>)
+            if (size(x) && is_iterable<decltype(*(begin(x)))>)
+            { /* Iterable inside Iterable */
+                int f = 0;
+                cerr << "\n~~~~~\n";
+                for (auto &&i : x)
+                {
+                    cerr << setw(2) << left << f++, print(i), cerr << "\n";
+                }
+                cerr << "~~~~~\n";
+            }
+            else
+            { /* Normal Iterable */
+                int f = 0;
+                cerr << "{";
+                for (auto &&i : x)
+                    cerr << (f++ ? "," : ""), print(i);
+                cerr << "}";
+            }
+        else if constexpr (requires { x.pop(); }) /* Stacks, Priority Queues, Queues */
+        {
+            auto temp = x;
+            int f = 0;
+            cerr << "{";
+            if constexpr (requires { x.top(); })
+                while (!temp.empty())
+                    cerr << (f++ ? "," : ""), print(temp.top()), temp.pop();
+            else
+                while (!temp.empty())
+                    cerr << (f++ ? "," : ""), print(temp.front()), temp.pop();
+            cerr << "}";
         }
-    }
-    return out << '}';
-}
-
-template <typename T1, typename T2>
-std::ostream& operator<<(std::ostream& out, const std::map<T1, T2>& map) {
-    out << '{';
-    for (auto it = map.begin(); it != map.end(); it++) {
-        std::pair<T1, T2> element = *it;
-        out << element.first << ": " << element.second;
-        if (std::next(it) != map.end()) {
-            out << ", ";   
+        else if constexpr (requires { x.first; x.second; }) /* Pair */
+        {
+            cerr << '(', print(x.first), cerr << ',', print(x.second), cerr << ')';
         }
-    }
-    return out << '}';
-}
-
-template <typename T>
-std::ostream& operator<<(std::ostream& out, const std::unordered_set<T>& set) {
-    out << '{';
-    for (auto it = set.begin(); it != set.end(); it++) {
-        T element = *it;
-        out << element;
-        if (std::next(it) != set.end()) {
-            out << ", ";   
+        else if constexpr (requires { get<0>(x); }) /* Tuple */
+        {
+            int f = 0;
+            cerr << '(', apply([&f](auto... args)
+                               { ((cerr << (f++ ? "," : ""), print(args)), ...); },
+                               x);
+            cerr << ')';
         }
+        else
+            cerr << x;
     }
-    return out << '}';
+    template <typename T, typename... V>
+    void printer(const char *names, T &&head, V &&...tail)
+    {
+        int i = 0;
+        for (size_t bracket = 0; names[i] != '\0' and (names[i] != ',' or bracket != 0); i++)
+            if (names[i] == '(' or names[i] == '<' or names[i] == '{')
+                bracket++;
+            else if (names[i] == ')' or names[i] == '>' or names[i] == '}')
+                bracket--;
+        cerr.write(names, i) << " = ";
+        print(head);
+        if constexpr (sizeof...(tail))
+            cerr << " ||", printer(names + i + 1, tail...);
+        else
+            cerr << "]\n";
+    }
+    template <typename T, typename... V>
+    void printerArr(const char *names, T arr[], size_t N, V... tail)
+    {
+        size_t i = 0;
+        for (; names[i] and names[i] != ','; i++)
+            cerr << names[i];
+        for (i++; names[i] and names[i] != ','; i++)
+            ;
+        cerr << " = {";
+        for (size_t ind = 0; ind < N; ind++)
+            cerr << (ind ? "," : ""), print(arr[ind]);
+        cerr << "}";
+        if constexpr (sizeof...(tail))
+            cerr << " ||", printerArr(names + i + 1, tail...);
+        else
+            cerr << "]\n";
+    }
+
 }
-
-template <typename T>
-std::ostream& operator<<(std::ostream& out, const std::multiset<T>& set) {
-    out << '{';
-    for (auto it = set.begin(); it != set.end(); it++) {
-        T element = *it;
-        out << element;
-        if (std::next(it) != set.end()) {
-            out << ", ";   
-        }
-    }
-    return out << '}';
-}
-
-template <typename T>
-std::ostream& operator<<(std::ostream& out, const std::unordered_multiset<T>& set) {
-    out << '{';
-    for (auto it = set.begin(); it != set.end(); it++) {
-        T element = *it;
-        out << element;
-        if (std::next(it) != set.end()) {
-            out << ", ";   
-        }
-    }
-    return out << '}';
-}
-
-template <typename T>
-std::ostream& operator<<(std::ostream& out, const std::set<T>& set) {
-    out << '{';
-    for (auto it = set.begin(); it != set.end(); it++) {
-        T element = *it;
-        out << element;
-        if (std::next(it) != set.end()) {
-            out << ", ";   
-        }
-    }
-    return out << '}';
-}
-
-// Source: https://stackoverflow.com/a/31116392/12128483
-template<typename Type, unsigned N, unsigned Last>
-struct TuplePrinter {
-    static void print(std::ostream& out, const Type& value) {
-        out << std::get<N>(value) << ", ";
-        TuplePrinter<Type, N + 1, Last>::print(out, value);
-    }
-};
-
-template<typename Type, unsigned N>
-struct TuplePrinter<Type, N, N> {
-    static void print(std::ostream& out, const Type& value) {
-        out << std::get<N>(value);
-    }
-};
-
-template<typename... Types>
-std::ostream& operator<<(std::ostream& out, const std::tuple<Types...>& value) {
-    out << '(';
-    TuplePrinter<std::tuple<Types...>, 0, sizeof...(Types) - 1>::print(out, value);
-    return out << ')';
-}
+#ifndef ONLINE_JUDGE
+#define debug(...) std::cerr << __LINE__ << ": [", __DEBUG_UTIL__::printer(#__VA_ARGS__, __VA_ARGS__)
+#define debugArr(...) std::cerr << __LINE__ << ": [", __DEBUG_UTIL__::printerArr(#__VA_ARGS__, __VA_ARGS__)
+#else
+#define debug(...)
+#define debugArr(...)
+#endif
+#endif
