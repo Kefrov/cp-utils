@@ -12,10 +12,8 @@ using namespace std;
 
 using ll = long long;
 using ld = long double;
-using str = string;
 
 using pll = pair<ll,ll>;
-using pld = pair<ld,ld>;
 #define mp make_pair
 #define ff first
 #define ss second
@@ -33,7 +31,6 @@ using vl = vector<ll>;
 const ll MOD = 1000000007; // 998244353
 const ll INF = 2000000000000000003;
 const ld EPS = 0.000000001;
-const ld PI = 3.14159265358979323846;
 
 void precalc() {}
 
