@@ -14,9 +14,8 @@ using u128 = __uint128_t;
 const ll MOD = 1000000007;
 const ll INF = 2000000000000000003;
 
-// https://www.youtube.com/watch?v=oW6iuFbwPDg (generating random numbers, shuffling vectors...)
-#define rng_init mt19937 rng(chrono::steady_clock::now().time_since_epoch().count())
-#define rng_seed(x) mt19937 rng(x)
+// random operations 
+mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
 
 // ^ Data Structures
 
